@@ -12,7 +12,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "racha") // A tabela no banco agora será 'racha'
+@Table(name = "racha")
 public class Racha {
 
     @Id
@@ -20,10 +20,8 @@ public class Racha {
     private Long id;
 
     @Column(nullable = false)
-    private String nome; // Ex: "Racha da Terca", "Racha dos Amigos"
+    private String nome;
 
-    // Funcionalidade 3: Gestão de Elenco
-    // Define a tabela de junção como 'racha_elenco'
     @ManyToMany
     @JoinTable(
             name = "racha_elenco",

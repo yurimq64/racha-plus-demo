@@ -30,7 +30,6 @@ public class Jogador {
 
     private int rating = 3;
 
-    // Atualizado: Agora é uma lista de Rachas
     @ManyToMany(mappedBy = "elenco")
     private Set<Racha> rachas = new HashSet<>();
 }
