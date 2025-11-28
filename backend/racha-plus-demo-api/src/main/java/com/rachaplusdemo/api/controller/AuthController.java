@@ -18,13 +18,10 @@ public class AuthController {
     @Autowired
     private JogadorService jogadorService;
 
-    // Endpoint: POST /auth/cadastro
     @PostMapping("/cadastro")
     public ResponseEntity<JogadorResponseDto> cadastrar(@RequestBody CadastroJogadorDto dto) {
-        // Chama o serviço para salvar
         JogadorResponseDto novoJogador = jogadorService.cadastrar(dto);
 
-        // Retorna HTTP 201 (Created) e o JSON do jogador criado
         return ResponseEntity.status(HttpStatus.CREATED).body(novoJogador);
     }
 }
