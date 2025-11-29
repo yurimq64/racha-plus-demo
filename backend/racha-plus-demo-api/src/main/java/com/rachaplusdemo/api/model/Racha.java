@@ -1,9 +1,8 @@
 package com.rachaplusdemo.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,5 +27,8 @@ public class Racha {
             joinColumns = @JoinColumn(name = "racha_id"),
             inverseJoinColumns = @JoinColumn(name = "jogador_id")
     )
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @JsonIgnore
     private Set<Jogador> elenco = new HashSet<>();
 }
