@@ -1,6 +1,7 @@
 package com.rachaplusdemo.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.rachaplusdemo.api.enums.Esporte;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +21,14 @@ public class Racha {
 
     @Column(nullable = false)
     private String nome;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Esporte esporte;
+
+    @ManyToOne
+    @JoinColumn(name = "dono_id", nullable = false)
+    private Jogador dono;
 
     @ManyToMany
     @JoinTable(

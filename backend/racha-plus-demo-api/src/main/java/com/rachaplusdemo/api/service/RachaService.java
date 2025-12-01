@@ -22,8 +22,11 @@ public class RachaService {
     public Racha criarRacha(RachaDto dto, String emailCriador) {
         Jogador criador = jogadorRepository.findByEmail(emailCriador)
                 .orElseThrow(() -> new RuntimeException("Jogador não encontrado"));
+
         Racha novoRacha = new Racha();
         novoRacha.setNome(dto.nome());
+        novoRacha.setEsporte(dto.esporte());
+        novoRacha.setDono(criador);
         novoRacha.getElenco().add(criador);
 
         return rachaRepository.save(novoRacha);
