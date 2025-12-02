@@ -38,4 +38,23 @@ public class RachaService {
 
         return jogador.getRachas();
     }
+
+    public void adicionarJogador(Long rachaId, String emailNovoJogador, String emailLogado) {
+        Racha racha = rachaRepository.findById(rachaId)
+                .orElseThrow(() -> new RuntimeException("Racha não encontrado"));
+
+        if (!emailLogado.equals(racha.getDono().getEmail())) {
+            throw new RuntimeException("Apenas o dono do racha pode adicionar membros");
+        }
+
+        Jogador novoJogador = jogadorRepository.findByEmail(emailNovoJogador)
+                .orElseThrow(() -> new RuntimeException("Jogador não encontrado"));
+
+        if (racha.getElenco().contains(novoJogador)) {
+            throw new RuntimeException("Este jogador já faz parte do racha");
+        }
+
+        racha.getElenco().add(novoJogador);
+        rachaRepository.save(racha);
+    }
 }
