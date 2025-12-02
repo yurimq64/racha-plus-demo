@@ -7,10 +7,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "racha")
@@ -29,7 +31,7 @@ public class Racha {
 
     @ManyToOne
     @JoinColumn(name = "dono_id", nullable = false)
-    @JsonIgnoreProperties
+    @JsonIgnoreProperties("rachas")
     private Jogador dono;
 
     @ManyToMany
@@ -42,4 +44,16 @@ public class Racha {
     @EqualsAndHashCode.Exclude
     @JsonIgnore
     private Set<Jogador> elenco = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Racha racha = (Racha) o;
+        return Objects.equals(id, racha.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 }
