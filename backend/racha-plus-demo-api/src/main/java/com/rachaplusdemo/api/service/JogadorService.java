@@ -26,7 +26,7 @@ public class JogadorService {
         jogador.setNome(dto.nome());
         jogador.setEmail(dto.email());
         jogador.setSenha(passwordEncoder.encode(dto.senha()));
-        jogador.setRating(3);
+        jogador.setRating(3.0);
 
         Jogador jogadorSalvo = jogadorRepository.save(jogador);
 

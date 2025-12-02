@@ -4,6 +4,6 @@ public record JogadorResponseDto(
         Long id,
         String nome,
         String email,
-        int rating
+        Double rating
 ) {
 }

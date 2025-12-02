@@ -31,11 +31,9 @@ public class Jogador implements UserDetails {
     @Column(nullable = false)
     private String senha;
 
-    private int rating = 3;
-
-    @ManyToMany(mappedBy = "elenco")
+    @OneToMany(mappedBy = "jogador")
     @JsonIgnoreProperties
-    private Set<Racha> rachas = new HashSet<>();
+    private Set<MembroRacha> membros = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {
@@ -56,6 +54,7 @@ public class Jogador implements UserDetails {
     }
 
     @Override
+    @JsonIgnore
     public String getPassword() {
         return senha;
     }
