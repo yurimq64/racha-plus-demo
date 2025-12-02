@@ -1,6 +1,7 @@
 package com.rachaplusdemo.api.controller;
 
 import com.rachaplusdemo.api.dto.RachaDto;
+import com.rachaplusdemo.api.dto.VincularJogadorDto;
 import com.rachaplusdemo.api.model.Racha;
 import com.rachaplusdemo.api.service.RachaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,13 +16,13 @@ import java.util.Set;
 public class RachaController {
 
     @Autowired
-    private RachaService service;
+    private RachaService rachaService;
 
     @PostMapping
     public ResponseEntity<Racha> criar(@RequestBody RachaDto dto) {
         String emailUsuarioLogado = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        Racha rachaCriado = service.criarRacha(dto, emailUsuarioLogado);
+        Racha rachaCriado = rachaService.criarRacha(dto, emailUsuarioLogado);
 
         return ResponseEntity.status(201).body(rachaCriado);
     }
@@ -30,8 +31,17 @@ public class RachaController {
     public ResponseEntity<Set<Racha>> listarMeusRachas() {
         String emailUsuarioLogado = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        Set<Racha> meusRachas = service.listarMeusRachas(emailUsuarioLogado);
+        Set<Racha> meusRachas = rachaService.listarMeusRachas(emailUsuarioLogado);
 
         return ResponseEntity.ok(meusRachas);
+    }
+
+    @PostMapping("/{id}/membros")
+    public ResponseEntity<Void> adicionarJogador(@PathVariable Long id, @RequestBody VincularJogadorDto dto) {
+        String emailUsuarioLogado = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        rachaService.adicionarJogador(id, dto.email(), emailUsuarioLogado);
+
+        return ResponseEntity.ok().build();
     }
 }
