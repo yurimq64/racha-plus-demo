@@ -26,15 +26,13 @@ public class JogadorService {
         jogador.setNome(dto.nome());
         jogador.setEmail(dto.email());
         jogador.setSenha(passwordEncoder.encode(dto.senha()));
-        jogador.setRating(3);
 
         Jogador jogadorSalvo = jogadorRepository.save(jogador);
 
         return new JogadorResponseDto(
                 jogadorSalvo.getId(),
                 jogadorSalvo.getNome(),
-                jogadorSalvo.getEmail(),
-                jogadorSalvo.getRating()
+                jogadorSalvo.getEmail()
         );
     }
 }

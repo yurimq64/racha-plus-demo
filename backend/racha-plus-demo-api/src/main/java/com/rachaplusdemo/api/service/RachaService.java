@@ -2,13 +2,16 @@ package com.rachaplusdemo.api.service;
 
 import com.rachaplusdemo.api.dto.RachaDto;
 import com.rachaplusdemo.api.model.Jogador;
+import com.rachaplusdemo.api.model.MembroRacha;
 import com.rachaplusdemo.api.model.Racha;
 import com.rachaplusdemo.api.repository.JogadorRepository;
+import com.rachaplusdemo.api.repository.MembroRachaRepository;
 import com.rachaplusdemo.api.repository.RachaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class RachaService {
@@ -19,6 +22,9 @@ public class RachaService {
     @Autowired
     private JogadorRepository jogadorRepository;
 
+    @Autowired
+    private MembroRachaRepository membroRachaRepository;
+
     public Racha criarRacha(RachaDto dto, String emailCriador) {
         Jogador criador = jogadorRepository.findByEmail(emailCriador)
                 .orElseThrow(() -> new RuntimeException("Jogador não encontrado"));
@@ -27,16 +33,20 @@ public class RachaService {
         novoRacha.setNome(dto.nome());
         novoRacha.setEsporte(dto.esporte());
         novoRacha.setDono(criador);
-        novoRacha.getElenco().add(criador);
+        Racha rachaSalvo = rachaRepository.save(novoRacha);
+        MembroRacha membroDono = new MembroRacha(rachaSalvo, criador);
+        membroRachaRepository.save(membroDono);
 
-        return rachaRepository.save(novoRacha);
+        return rachaSalvo;
     }
 
     public Set<Racha> listarMeusRachas(String emailUsuario) {
         Jogador jogador = jogadorRepository.findByEmail(emailUsuario)
                 .orElseThrow(() -> new RuntimeException("Jogador não encontrado"));
 
-        return jogador.getRachas();
+        return jogador.getMembros().stream()
+                .map(MembroRacha::getRacha)
+                .collect(Collectors.toSet());
     }
 
     public void adicionarJogador(Long rachaId, String emailNovoJogador, String emailLogado) {
@@ -50,11 +60,11 @@ public class RachaService {
         Jogador novoJogador = jogadorRepository.findByEmail(emailNovoJogador)
                 .orElseThrow(() -> new RuntimeException("Jogador não encontrado"));
 
-        if (racha.getElenco().contains(novoJogador)) {
+        if (membroRachaRepository.findByRachaAndJogador(racha, novoJogador).isPresent()) {
             throw new RuntimeException("Este jogador já faz parte do racha");
         }
 
-        racha.getElenco().add(novoJogador);
-        rachaRepository.save(racha);
+        MembroRacha novoMembro = new MembroRacha(racha, novoJogador);
+        membroRachaRepository.save(novoMembro);
     }
 }

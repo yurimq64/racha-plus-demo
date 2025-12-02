@@ -31,19 +31,11 @@ public class Racha {
 
     @ManyToOne
     @JoinColumn(name = "dono_id", nullable = false)
-    @JsonIgnoreProperties("rachas")
+    @JsonIgnoreProperties("membros")
     private Jogador dono;
 
-    @ManyToMany
-    @JoinTable(
-            name = "racha_elenco",
-            joinColumns = @JoinColumn(name = "racha_id"),
-            inverseJoinColumns = @JoinColumn(name = "jogador_id")
-    )
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @JsonIgnore
-    private Set<Jogador> elenco = new HashSet<>();
+    @OneToMany(mappedBy = "racha", cascade = CascadeType.ALL)
+    private Set<MembroRacha> membros = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {
