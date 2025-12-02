@@ -29,10 +29,12 @@ public class Jogador implements UserDetails {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String senha;
 
     @OneToMany(mappedBy = "jogador")
     @JsonIgnoreProperties
+    @JsonIgnore
     private Set<MembroRacha> membros = new HashSet<>();
 
     @Override

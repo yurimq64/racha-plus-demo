@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "membro", uniqueConstraints = {
+@Table(name = "membro_racha", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"racha_id", "jogador_id"})
 })
 public class MembroRacha {

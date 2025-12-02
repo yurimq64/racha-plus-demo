@@ -60,7 +60,7 @@ public class RachaService {
         Jogador novoJogador = jogadorRepository.findByEmail(emailNovoJogador)
                 .orElseThrow(() -> new RuntimeException("Jogador não encontrado"));
 
-        if (membroRachaRepository.findRachaAndJogador(racha, novoJogador).isPresent()) {
+        if (membroRachaRepository.findByRachaAndJogador(racha, novoJogador).isPresent()) {
             throw new RuntimeException("Este jogador já faz parte do racha");
         }
 

@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface MembroRachaRepository extends JpaRepository<MembroRacha, Long> {
-    Optional<MembroRacha> findRachaAndJogador(Racha racha, Jogador jogador);
+    Optional<MembroRacha> findByRachaAndJogador(Racha racha, Jogador jogador);
 }

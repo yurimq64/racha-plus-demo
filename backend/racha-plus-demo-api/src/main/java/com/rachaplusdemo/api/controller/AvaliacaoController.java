@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.*;
 public class AvaliacaoController {
 
     @Autowired
-    private AvaliacaoService service;
+    private AvaliacaoService avaliacaoService;
 
-    @PostMapping("/jogador/{id}")
-    public ResponseEntity<Void> avaliar(@PathVariable Long id, @RequestBody AtualizarRatingDto dto) {
+    @PostMapping("/racha/{rachaId}/jogador/{id}")
+    public ResponseEntity<Void> avaliar(@PathVariable Long rachaId, @PathVariable Long id, @RequestBody AtualizarRatingDto dto) {
         String emailAvaliador = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        service.avaliarJogador(id, dto.novaNota(), emailAvaliador);
+        avaliacaoService.avaliarJogador(rachaId, id, dto.novaNota(), emailAvaliador);
 
         return ResponseEntity.ok().build();
     }
