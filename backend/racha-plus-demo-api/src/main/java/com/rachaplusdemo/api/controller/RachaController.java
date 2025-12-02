@@ -1,8 +1,10 @@
 package com.rachaplusdemo.api.controller;
 
+import com.rachaplusdemo.api.dto.BalanceamentoResponseDto;
 import com.rachaplusdemo.api.dto.RachaDto;
 import com.rachaplusdemo.api.dto.VincularJogadorDto;
 import com.rachaplusdemo.api.model.Racha;
+import com.rachaplusdemo.api.service.BalanceamentoService;
 import com.rachaplusdemo.api.service.RachaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,9 @@ public class RachaController {
 
     @Autowired
     private RachaService rachaService;
+
+    @Autowired
+    private BalanceamentoService balanceamentoService;
 
     @PostMapping
     public ResponseEntity<Racha> criar(@RequestBody RachaDto dto) {
@@ -43,5 +48,14 @@ public class RachaController {
         rachaService.adicionarJogador(id, dto.email(), emailUsuarioLogado);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/balancear")
+    public ResponseEntity<BalanceamentoResponseDto> balancearTimes(@PathVariable Long id) {
+        String emailUsuario = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        BalanceamentoResponseDto times = balanceamentoService.balancearTimes(id, emailUsuario);
+
+        return ResponseEntity.ok(times);
     }
 }
