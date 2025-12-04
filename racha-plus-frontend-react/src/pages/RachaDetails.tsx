@@ -14,40 +14,39 @@ import { Racha, BalanceamentoResponse } from "@/types";
 export default function RachaDetails() {
   const { id } = useParams<{ id: string }>();
   
+  // Estados necessários
   const [racha, setRacha] = useState<Racha | null>(null);
   const [balanceResult, setBalanceResult] = useState<BalanceamentoResponse | null>(null);
-  
   const [isLoading, setIsLoading] = useState(true);
   const [isBalancing, setIsBalancing] = useState(false);
 
-  // 1. Buscar TODOS os rachas e filtrar o correto
-  useEffect(() => {
-    const fetchRacha = async () => {
-      try {
-        setIsLoading(true);
-        // Chama o endpoint de lista que já existe
-        const response = await api.get<Racha[]>("/rachas");
-        
-        // Filtra no JavaScript pelo ID da URL
-        const foundRacha = response.data.find((r) => r.id === Number(id));
-        
-        if (foundRacha) {
-          setRacha(foundRacha);
-        } else {
-          toast.error("Racha não encontrado.");
-        }
-      } catch (error) {
-        console.error("Erro ao carregar rachas", error);
-        toast.error("Erro ao carregar detalhes.");
-      } finally {
-        setIsLoading(false);
+  // Função para buscar dados do Racha
+  const fetchRacha = async () => {
+    try {
+      // Como optamos por não criar o endpoint específico de ID no backend ainda,
+      // buscamos todos e filtramos localmente.
+      const response = await api.get<Racha[]>("/rachas");
+      const foundRacha = response.data.find((r) => r.id === Number(id));
+      
+      if (foundRacha) {
+        setRacha(foundRacha);
+      } else {
+        toast.error("Racha não encontrado.");
       }
-    };
+    } catch (error) {
+      console.error("Erro ao carregar rachas", error);
+      toast.error("Erro ao carregar detalhes.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // Carregar dados ao montar o componente
+  useEffect(() => {
     if (id) fetchRacha();
   }, [id]);
 
-  // 2. O sorteio continua usando o endpoint específico do backend
+  // Função para sortear times
   const handleBalance = async () => {
     if (!id) return;
     setIsBalancing(true);
@@ -61,6 +60,29 @@ export default function RachaDetails() {
       toast.error("Erro ao sortear times. Verifique se há jogadores suficientes.");
     } finally {
       setIsBalancing(false);
+    }
+  };
+
+  // Função para avaliar membro
+  const handleRateMember = async (jogadorId: number, novaNota: number) => {
+    if (!id) return;
+
+    const toastId = toast.loading("Enviando avaliação...");
+
+    try {
+      await api.post(`/avaliacoes/racha/${id}/jogador/${jogadorId}`, {
+        novaNota: novaNota
+      });
+
+      toast.success("Avaliação enviada!", { id: toastId });
+      
+      // Recarrega os dados para atualizar a média na tela
+      fetchRacha();
+      
+    } catch (error: any) {
+      console.error("Erro ao avaliar", error);
+      const msg = error.response?.data?.message || "Erro ao salvar avaliação.";
+      toast.error(msg, { id: toastId });
     }
   };
 
@@ -161,11 +183,15 @@ export default function RachaDetails() {
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Coluna Esquerda - Lista de Membros */}
             <div>
-              <MemberList membros={membros.map(m => ({
-                id: m.id,
-                nome: m.jogador.nome, // Acessa o nome aninhado
-                rating: m.rating
-              }))} />
+              <MemberList 
+                membros={membros.map(m => ({
+                  id: m.jogador.id, // ID do jogador para a API
+                  nome: m.jogador.nome,
+                  email: m.jogador.email,
+                  rating: m.rating
+                }))} 
+                onRateMember={handleRateMember}
+              />
             </div>
 
             {/* Coluna Direita - Times Sorteados */}
@@ -196,7 +222,6 @@ export default function RachaDetails() {
                         time={{
                             nome: time.nome,
                             forcaTotal: time.forcaTotal,
-                            // Mapeia para garantir estrutura compatível com UI
                             jogadores: time.jogadores.map((j, i) => ({ ...j, id: i })) 
                         }} 
                         index={idx} 
@@ -209,7 +234,7 @@ export default function RachaDetails() {
                   <div className="text-center">
                     <Shuffle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
-                      Clique em "Sortear Times" para equilibrar os times
+                      Clique em "Sortear Times" para equilibrar os times com base nos dados do servidor.
                     </p>
                   </div>
                 </div>
