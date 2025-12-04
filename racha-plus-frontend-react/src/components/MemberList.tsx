@@ -1,13 +1,21 @@
 import { User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RatingStars } from "@/components/RatingStars";
-import { Membro } from "@/types";
+
+// Definimos uma interface local para o que este componente precisa exibir.
+// Isso desacopla o componente da estrutura complexa da API.
+export interface MembroDisplay {
+  id: number;
+  nome: string;
+  rating: number;
+}
 
 interface MemberListProps {
-  membros: Membro[];
+  membros: MembroDisplay[];
 }
 
 export function MemberList({ membros }: MemberListProps) {
+  // Ordena por rating (maior para menor)
   const sortedMembros = [...membros].sort((a, b) => b.rating - a.rating);
 
   return (
@@ -28,6 +36,7 @@ export function MemberList({ membros }: MemberListProps) {
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <span className="text-sm font-bold text-primary">
+                  {/* Agora 'membro.nome' existe e está correto */}
                   {membro.nome.charAt(0)}
                 </span>
               </div>

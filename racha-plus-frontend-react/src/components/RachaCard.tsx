@@ -1,3 +1,5 @@
+// src/components/RachaCard.tsx
+
 import { Link } from "react-router-dom";
 import { Users, Crown } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -12,15 +14,14 @@ interface RachaCardProps {
 }
 
 export function RachaCard({ racha, className }: RachaCardProps) {
-  // O backend deve retornar a lista de membros dentro do objeto Racha
-  // Caso venha null ou undefined, usamos 0.
-  // Você precisará adicionar 'membros?: any[]' na interface Racha no types/index.ts se ainda não tiver
-  const membrosCount = (racha as any).membros?.length || 0; 
+  // Agora o TypeScript sabe que 'membros' existe na interface
+  const membrosCount = racha.membros?.length || 0; 
   
   const isBasket = racha.esporte === "BASQUETE";
 
   return (
     <Link to={`/racha/${racha.id}`}>
+      {/* ... o restante do JSX permanece igual ... */}
       <Card 
         className={cn(
           "group card-hover cursor-pointer bg-card border-border overflow-hidden",
@@ -64,7 +65,6 @@ export function RachaCard({ racha, className }: RachaCardProps) {
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <Crown className="h-4 w-4 text-accent" />
-              {/* O backend retorna o objeto dono completo */}
               <span>{racha.dono.nome}</span>
             </div>
             <div className="flex items-center gap-1.5">

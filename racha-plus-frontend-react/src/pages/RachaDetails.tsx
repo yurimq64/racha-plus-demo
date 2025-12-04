@@ -1,23 +1,76 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Shuffle, Crown, Users } from "lucide-react";
+import { ArrowLeft, Shuffle, Crown, Users, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sidebar } from "@/components/Sidebar";
 import { MemberList } from "@/components/MemberList";
 import { TeamDisplay } from "@/components/TeamDisplay";
 import { SportIcon } from "@/components/SportIcon";
-import { mockRachas, mockMembros, balanceTimes } from "@/data/mockData";
-import { BalanceamentoResponse } from "@/types";
 import { toast } from "sonner";
+import api from "@/services/api";
+import { Racha, BalanceamentoResponse } from "@/types";
 
 export default function RachaDetails() {
   const { id } = useParams<{ id: string }>();
+  
+  const [racha, setRacha] = useState<Racha | null>(null);
   const [balanceResult, setBalanceResult] = useState<BalanceamentoResponse | null>(null);
+  
+  const [isLoading, setIsLoading] = useState(true);
   const [isBalancing, setIsBalancing] = useState(false);
 
-  const racha = mockRachas.find((r) => r.id === Number(id));
-  const membros = mockMembros[Number(id)] || [];
+  // 1. Buscar TODOS os rachas e filtrar o correto
+  useEffect(() => {
+    const fetchRacha = async () => {
+      try {
+        setIsLoading(true);
+        // Chama o endpoint de lista que já existe
+        const response = await api.get<Racha[]>("/rachas");
+        
+        // Filtra no JavaScript pelo ID da URL
+        const foundRacha = response.data.find((r) => r.id === Number(id));
+        
+        if (foundRacha) {
+          setRacha(foundRacha);
+        } else {
+          toast.error("Racha não encontrado.");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar rachas", error);
+        toast.error("Erro ao carregar detalhes.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (id) fetchRacha();
+  }, [id]);
+
+  // 2. O sorteio continua usando o endpoint específico do backend
+  const handleBalance = async () => {
+    if (!id) return;
+    setIsBalancing(true);
+    
+    try {
+      const response = await api.get<BalanceamentoResponse>(`/rachas/${id}/balancear`);
+      setBalanceResult(response.data);
+      toast.success("Times sorteados com sucesso!");
+    } catch (error) {
+      console.error("Erro ao sortear", error);
+      toast.error("Erro ao sortear times. Verifique se há jogadores suficientes.");
+    } finally {
+      setIsBalancing(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!racha) {
     return (
@@ -32,19 +85,8 @@ export default function RachaDetails() {
     );
   }
 
-  const handleBalance = () => {
-    setIsBalancing(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      const result = balanceTimes(membros);
-      setBalanceResult(result);
-      setIsBalancing(false);
-      toast.success("Times sorteados com sucesso!");
-    }, 800);
-  };
-
   const isBasket = racha.esporte === "BASQUETE";
+  const membros = racha.membros || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,7 +94,7 @@ export default function RachaDetails() {
       
       <main className="lg:ml-64 p-6 pt-20 lg:pt-6">
         <div className="max-w-7xl mx-auto">
-          {/* Back Button */}
+          {/* Botão Voltar */}
           <Link 
             to="/dashboard" 
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
@@ -61,7 +103,7 @@ export default function RachaDetails() {
             Voltar para Meus Rachas
           </Link>
 
-          {/* Header */}
+          {/* Cabeçalho */}
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
             <div className="flex items-start gap-4">
               <div 
@@ -102,7 +144,10 @@ export default function RachaDetails() {
               disabled={isBalancing || membros.length < 2}
             >
               {isBalancing ? (
-                <span className="animate-pulse">Sorteando...</span>
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sorteando...
+                </>
               ) : (
                 <>
                   <Shuffle className="h-5 w-5" />
@@ -112,18 +157,21 @@ export default function RachaDetails() {
             </Button>
           </div>
 
-          {/* Content Grid */}
+          {/* Grid de Conteúdo */}
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* Left Column - Members */}
+            {/* Coluna Esquerda - Lista de Membros */}
             <div>
-              <MemberList membros={membros} />
+              <MemberList membros={membros.map(m => ({
+                id: m.id,
+                nome: m.jogador.nome, // Acessa o nome aninhado
+                rating: m.rating
+              }))} />
             </div>
 
-            {/* Right Column - Teams */}
+            {/* Coluna Direita - Times Sorteados */}
             <div className="space-y-6">
               {balanceResult ? (
                 <>
-                  {/* Difference Badge */}
                   <div className="flex items-center justify-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary border border-border">
                       <span className="text-sm text-muted-foreground">
@@ -141,10 +189,18 @@ export default function RachaDetails() {
                     </div>
                   </div>
 
-                  {/* Teams */}
                   <div className="grid gap-6">
                     {balanceResult.times.map((time, idx) => (
-                      <TeamDisplay key={time.nome} time={time} index={idx} />
+                      <TeamDisplay 
+                        key={time.nome} 
+                        time={{
+                            nome: time.nome,
+                            forcaTotal: time.forcaTotal,
+                            // Mapeia para garantir estrutura compatível com UI
+                            jogadores: time.jogadores.map((j, i) => ({ ...j, id: i })) 
+                        }} 
+                        index={idx} 
+                      />
                     ))}
                   </div>
                 </>
